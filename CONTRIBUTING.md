@@ -14,4 +14,4 @@ docs/кратко-описание за документация
 Нужно е поне едно одобрение от другия човек
 Не се слива собствен PR без ревю
 
-Branching strategy: Branching strategy: GitHub Flow, защото е проста и подходяща за двама
+Branching strategy: GitHub Flow, защото е проста за малък екип.
