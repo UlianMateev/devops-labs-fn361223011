@@ -11,7 +11,7 @@ pip install -r requirements-dev.txt
 ## Check that it works / Проверка, че работи
 
  which address do you open and what should you see? / кой адрес отваряте и какво трябва да видите?
-curl  http://127.0.0.1:8000/health
+curl  http://127.0.0.1:9000/health
 
 ## Run the tests / Тестове
 
@@ -21,6 +21,6 @@ ruff check .
 ## When something breaks / Когато нещо се счупи
 
  the first three things you check. / първите три неща, които проверявате.
- curl  http://127.0.0.1:8000/health
- curl  http://127.0.0.1:8000/ready
- curl  http://127.0.0.1:8000/version
+ curl  http://127.0.0.1:9000/health
+ curl  http://127.0.0.1:9000/ready
+ curl  http://127.0.0.1:9000/version
