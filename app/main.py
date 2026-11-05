@@ -23,7 +23,7 @@ def make_repository() -> NoteRepository:
 _repository = make_repository()
 
 
- def get_repository() -> NoteRepository:
+def get_repository() -> NoteRepository:
     return _repository
 
 
