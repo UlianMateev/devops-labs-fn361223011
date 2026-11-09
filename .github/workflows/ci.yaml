@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "experiment/broken"]
     tags: ["v*"]
   pull_request:
 
@@ -72,15 +72,11 @@ jobs:
 
   docs:
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/experiment/broken'
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
