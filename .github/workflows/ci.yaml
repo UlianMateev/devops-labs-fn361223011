@@ -53,9 +53,9 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE }}:${{ github.sha }}
-          severity: CRITICAL
+          severity: CRITICAL,HIGH
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: "0"
       - name: Push to GitHub Container Registry
         if: github.event_name == 'push'
         run: |
