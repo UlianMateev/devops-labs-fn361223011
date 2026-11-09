@@ -39,7 +39,6 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v7
       - run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
