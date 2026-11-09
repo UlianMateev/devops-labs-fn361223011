@@ -42,7 +42,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v7
-      - run: echo "IMAGE=ghcr.io/IvanPetrov/notes" >> "$GITHUB_ENV"
+      - run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - run: docker build -t "$IMAGE:${{ github.sha }}" .
       - name: Smoke test
         run: |
@@ -72,15 +72,11 @@ jobs:
 
   docs:
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/experiment/broken'
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
