@@ -12,3 +12,55 @@
         state: present
         update_cache: true
         cache_valid_time: 3600
+
+- name: База данни
+  hosts: db
+  become: true
+  vars:
+    db_name: notes
+    db_user: notes
+    db_password: notes_pass_123
+  tasks:
+    - name: Инсталирай PostgreSQL и psycopg2
+      ansible.builtin.apt:
+        name:
+          - postgresql
+          - python3-psycopg2
+        state: present
+
+    - name: Увери се, че PostgreSQL работи
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: true
+
+    - name: Слушай на всички адреси
+      ansible.builtin.lineinfile:
+        path: /etc/postgresql/17/main/postgresql.conf
+        regexp: '^#?listen_addresses'
+        line: "listen_addresses = '*'"
+      notify: Restart PostgreSQL
+
+    - name: Разреши връзки от мрежата със scram-sha-256
+      ansible.builtin.lineinfile:
+        path: /etc/postgresql/17/main/pg_hba.conf
+        line: "host all all 0.0.0.0/0 scram-sha-256"
+      notify: Restart PostgreSQL
+
+    - name: Създай потребител на базата
+      community.postgresql.postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+      become_user: postgres
+
+    - name: Създай базата
+      community.postgresql.postgresql_db:
+        name: "{{ db_name }}"
+        owner: "{{ db_user }}"
+      become_user: postgres
+
+  handlers:
+    - name: Restart PostgreSQL
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
