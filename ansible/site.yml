@@ -1,0 +1,14 @@
+---
+- name: Базови пакети за всички сървъри
+  hosts: all
+  become: true
+  tasks:
+    - name: Инсталирай curl, ca-certificates и acl
+      ansible.builtin.apt:
+        name:
+          - curl
+          - ca-certificates
+          - acl
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
