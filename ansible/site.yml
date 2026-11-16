@@ -1,47 +1,27 @@
 
-- name: Уеб сървъри
-  hosts: web
+- name: Балансьор
+  hosts: lb
   become: true
-  vars:
-    app_repo: "https://github.com/UlianMateev/devops-labs-fn361223011"
-    database_url: "postgresql://notes:notes_pass_123@db:5432/notes"
   tasks:
-    - name: Инсталирай python3-venv, python3-packaging и git
+    - name: Инсталирай nginx
       ansible.builtin.apt:
-        name:
-          - python3-venv
-          - python3-packaging
-          - git
+        name: nginx
         state: present
 
-    - name: Клонирай приложението
-      ansible.builtin.git:
-        repo: "{{ app_repo }}"
-        dest: /opt/notes
-        version: main
-      notify: Restart notes
-
-    - name: Инсталирай зависимостите във virtualenv
-      ansible.builtin.pip:
-        requirements: /opt/notes/requirements.txt
-        virtualenv: /opt/notes/.venv
-        virtualenv_command: python3 -m venv
-
-    - name: Постави systemd услугата от шаблон
+    - name: Постави конфигурацията на nginx от шаблон
       ansible.builtin.template:
-        src: templates/notes.service.j2
-        dest: /etc/systemd/system/notes.service
-      notify: Restart notes
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+      notify: Reload nginx
 
-    - name: Пусни и включи услугата notes
-      ansible.builtin.systemd:
-        name: notes
+    - name: Пусни и включи nginx
+      ansible.builtin.service:
+        name: nginx
         state: started
         enabled: true
-        daemon_reload: true
 
   handlers:
-    - name: Restart notes
-      ansible.builtin.systemd:
-        name: notes
-        state: restarted
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
