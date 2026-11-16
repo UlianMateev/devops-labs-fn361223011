@@ -1,66 +1,47 @@
----
-- name: Базови пакети за всички сървъри
-  hosts: all
-  become: true
-  tasks:
-    - name: Инсталирай curl, ca-certificates и acl
-      ansible.builtin.apt:
-        name:
-          - curl
-          - ca-certificates
-          - acl
-        state: present
-        update_cache: true
-        cache_valid_time: 3600
 
-- name: База данни
-  hosts: db
+- name: Уеб сървъри
+  hosts: web
   become: true
   vars:
-    db_name: notes
-    db_user: notes
-    db_password: notes_pass_123
+    app_repo: "https://github.com/UlianMateev/devops-labs-fn361223011"
+    database_url: "postgresql://notes:notes_pass_123@db:5432/notes"
   tasks:
-    - name: Инсталирай PostgreSQL и psycopg2
+    - name: Инсталирай python3-venv, python3-packaging и git
       ansible.builtin.apt:
         name:
-          - postgresql
-          - python3-psycopg2
+          - python3-venv
+          - python3-packaging
+          - git
         state: present
 
-    - name: Увери се, че PostgreSQL работи
-      ansible.builtin.service:
-        name: postgresql
+    - name: Клонирай приложението
+      ansible.builtin.git:
+        repo: "{{ app_repo }}"
+        dest: /opt/notes
+        version: main
+      notify: Restart notes
+
+    - name: Инсталирай зависимостите във virtualenv
+      ansible.builtin.pip:
+        requirements: /opt/notes/requirements.txt
+        virtualenv: /opt/notes/.venv
+        virtualenv_command: python3 -m venv
+
+    - name: Постави systemd услугата от шаблон
+      ansible.builtin.template:
+        src: templates/notes.service.j2
+        dest: /etc/systemd/system/notes.service
+      notify: Restart notes
+
+    - name: Пусни и включи услугата notes
+      ansible.builtin.systemd:
+        name: notes
         state: started
         enabled: true
-
-    - name: Слушай на всички адреси
-      ansible.builtin.lineinfile:
-        path: /etc/postgresql/17/main/postgresql.conf
-        regexp: '^#?listen_addresses'
-        line: "listen_addresses = '*'"
-      notify: Restart PostgreSQL
-
-    - name: Разреши връзки от мрежата със scram-sha-256
-      ansible.builtin.lineinfile:
-        path: /etc/postgresql/17/main/pg_hba.conf
-        line: "host all all 0.0.0.0/0 scram-sha-256"
-      notify: Restart PostgreSQL
-
-    - name: Създай потребител на базата
-      community.postgresql.postgresql_user:
-        name: "{{ db_user }}"
-        password: "{{ db_password }}"
-      become_user: postgres
-
-    - name: Създай базата
-      community.postgresql.postgresql_db:
-        name: "{{ db_name }}"
-        owner: "{{ db_user }}"
-      become_user: postgres
+        daemon_reload: true
 
   handlers:
-    - name: Restart PostgreSQL
-      ansible.builtin.service:
-        name: postgresql
+    - name: Restart notes
+      ansible.builtin.systemd:
+        name: notes
         state: restarted
