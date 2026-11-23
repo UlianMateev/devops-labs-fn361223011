@@ -25,3 +25,6 @@ venv/
 # MkDocs build output
 site/
 .env
+
+.terraform/
+*.tfstate*
